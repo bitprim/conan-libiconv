@@ -1,21 +1,21 @@
-# This repository holds a recipe for the LZ4 compression library
+# This repository holds a recipe for the libiconv unicode conversion library
 
-[Conan.io](https://conan.io) package for [LZ4](http://www.lz4.org) project
+[Conan.io](https://conan.io) package for [libiconv](https://www.gnu.org/software/libiconv) project
 
-The packages generated with this **conanfile** can be found in [Bintray](https://bintray.com/bincrafters/public-conan/LZ4%3Abincrafters).
+The packages generated with this **conanfile** can be found in [Bintray](https://bintray.com/bincrafters/public-conan/libiconv%3Abincrafters).
 
 ## For Users: Use this package
 
 ### Basic setup
 
-    $ conan install LZ4/1.8.0@bincrafters/stable
+    $ conan install libiconv/1.5@bincrafters/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    LZ4/1.8.0@bincrafters/stable
+    libiconv/1.5@bincrafters/stable
 
     [generators]
     txt
@@ -44,7 +44,7 @@ This is a header only library, so nothing needs to be built.
 
 ## Upload
 
-    $ conan upload LZ4/1.8.0@bincrafters/stable --all -r bincrafters
+    $ conan upload libiconv/1.5@bincrafters/stable --all -r bincrafters
 
 ### License
-[BSD 2-Clause](https://github.com/lz4/lz4/blob/dev/lib/LICENSE)
+[BSD 2-Clause](http://git.savannah.gnu.org/cgit/libiconv.git/tree/COPYING?h=v1.15)
