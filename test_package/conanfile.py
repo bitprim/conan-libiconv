@@ -10,10 +10,10 @@ class TestPackageConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        
+
     def imports(self):
         self.copy("*", dst="bin", src="bin")
         self.copy("*", dst="bin", src="lib")
-        
+
     def test(self):
         self.run(os.path.join("bin","test_package"))
