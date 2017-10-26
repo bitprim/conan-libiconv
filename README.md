@@ -1,3 +1,6 @@
+[![Build status](https://ci.appveyor.com/api/projects/status/n5bwli6x9ovqmvq4/branch/testing/1.15?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-libiconv/branch/testing/1.15)
+[![Build Status](https://travis-ci.org/bincrafters/conan-libiconv.svg?branch=testing%2F1.15)](https://travis-ci.org/bincrafters/conan-libiconv)
+
 # This repository holds a recipe for the libiconv unicode conversion library
 
 [Conan.io](https://conan.io) package for [libiconv](https://www.gnu.org/software/libiconv) project
