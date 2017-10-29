@@ -24,7 +24,7 @@ class LibiconvConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.build_requires("msys2_installer/latest@bincrafters/stable")
+            self.build_requires("cygwin_installer/2.9.0@bincrafters/testing")
 
     def build_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
@@ -38,8 +38,8 @@ class LibiconvConan(ConanFile):
             env_build.make()
             env_build.make(args=["install"])
 
-    def run_in_msys(self, command):
-        bash = "%MSYS_ROOT%\\usr\\bin\\bash"
+    def run_in_cygwin(self, command):
+        bash = "%CYGWIN_ROOT%\\bin\\bash"
         vcvars_command = tools.vcvars_command(self.settings)
         self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
             vcvars_command=vcvars_command,
@@ -55,58 +55,44 @@ class LibiconvConan(ConanFile):
         else:
             raise Exception("unsupported architecture %s" % self.settings.arch)
         prefix = tools.unix_path(os.path.abspath(self.install_dir))
+        prefix = '/cygdrive' + prefix
         if self.options.shared:
             options = '--disable-static --enable-shared'
         else:
             options = '--enable-static --disable-shared'
 
         with tools.chdir(self.archive_name):
-            # WORKAROUND
-            tools.replace_in_file(os.path.join('build-aux', 'ar-lib'), 'MINGW*)', 'MSYS*)')
-            tools.replace_in_file(os.path.join('build-aux', 'compile'), 'MINGW*)', 'MSYS*)')
+            # WORKAROUND (for MSYS build)
+            # tools.replace_in_file(os.path.join('build-aux', 'ar-lib'), 'MINGW*)', 'MSYS*)')
+            # tools.replace_in_file(os.path.join('build-aux', 'compile'), 'MINGW*)', 'MSYS*)')
+
             # WORKAROUND: libtool:   error: unrecognised option: '-DPACKAGE_VERSION_STRING=\"1.15\"'
-            for d in ['src', 'lib']:
-                tools.replace_in_file(os.path.join(d, 'Makefile.in'),
-                                      '`$(SHELL) $(srcdir)/../windows/windres-options --escape $(PACKAGE_VERSION)`', '')
-            package_version = self.version.split('.')
-            package_version_major = package_version[0]
-            package_version_minor = package_version[1]
-            if len(package_version) > 2:
-                package_version_subminor = package_version[2]
-            else:
-                package_version_subminor = '0'
-            for res in ['iconv.rc', 'libiconv.rc']:
-                tools.replace_in_file(os.path.join('windows', res),
-                                      'PACKAGE_VERSION_MAJOR', package_version_major)
-                tools.replace_in_file(os.path.join('windows', res),
-                                      'PACKAGE_VERSION_MINOR', package_version_minor)
-                tools.replace_in_file(os.path.join('windows', res),
-                                      'PACKAGE_VERSION_SUBMINOR', package_version_subminor)
-                tools.replace_in_file(os.path.join('windows', res),
-                                      'PACKAGE_VERSION_STRING', '"%s"' % self.version)
+            tools.replace_in_file(os.path.join('src', 'Makefile.in'),
+                                  'OBJECTS_RES_yes = iconv.res', 'OBJECTS_RES_yes =')
+            tools.replace_in_file(os.path.join('lib', 'Makefile.in'),
+                                  'OBJECTS_RES_yes = libiconv.res.lo', 'OBJECTS_RES_yes =')
 
-            self.run_in_msys('chmod a+x build-aux/ar-lib build-aux/compile')
-            self.run_in_msys('pacman -S make diffutils --noconfirm')
+            self.run_in_cygwin('chmod a+x build-aux/ar-lib build-aux/compile')
 
-            self.run_in_msys('win32_target=_WIN32_WINNT_VISTA ./configure '
-                             '{options} '
-                             '--host={host} '
-                             '--prefix={prefix} '
-                             'CC="$PWD/build-aux/compile cl -nologo" '
-                             'CFLAGS="-{runtime}" '
-                             'CXX="$PWD/build-aux/compile cl -nologo" '
-                             'CXXFLAGS="-{runtime}" '
-                             'CPPFLAGS="-D_WIN32_WINNT=0x0600 -I{prefix}/include" '
-                             'LDFLAGS="-L{prefix}/lib" '
-                             'LD="link" '
-                             'NM="dumpbin -symbols" '
-                             'STRIP=":" '
-                             'AR="$PWD/build-aux/ar-lib lib" '
-                             'RANLIB=":" '.format(host=host, prefix=prefix, options=options,
-                                                  runtime=str(self.settings.compiler.runtime)))
+            self.run_in_cygwin('win32_target=_WIN32_WINNT_VISTA ./configure '
+                               '{options} '
+                               '--host={host} '
+                               '--prefix={prefix} '
+                               'CC="$PWD/build-aux/compile cl -nologo" '
+                               'CFLAGS="-{runtime}" '
+                               'CXX="$PWD/build-aux/compile cl -nologo" '
+                               'CXXFLAGS="-{runtime}" '
+                               'CPPFLAGS="-D_WIN32_WINNT=0x0600 -I{prefix}/include" '
+                               'LDFLAGS="-L{prefix}/lib" '
+                               'LD="link" '
+                               'NM="dumpbin -symbols" '
+                               'STRIP=":" '
+                               'AR="$PWD/build-aux/ar-lib lib" '
+                               'RANLIB=":" '.format(host=host, prefix=prefix, options=options,
+                                                    runtime=str(self.settings.compiler.runtime)))
 
-            self.run_in_msys('make -j{cpu_count}'.format(cpu_count=tools.cpu_count()))
-            self.run_in_msys('make install')
+            self.run_in_cygwin('make -j%s' % tools.cpu_count())
+            self.run_in_cygwin('make install')
 
     def build_mingw(self):
         raise Exception("not implemented")
