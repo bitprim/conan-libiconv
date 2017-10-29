@@ -1,6 +1,7 @@
 #include <cstddef>
 #include <iostream>
 #include <iconv.h>
+#include <cstdint>
 
 int main() {
     iconv_t context = iconv_open("UCS-4-INTERNAL", "US-ASCII");
