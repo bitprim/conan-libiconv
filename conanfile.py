@@ -120,5 +120,8 @@ class LibiconvConan(ConanFile):
                 self.copy("*.dll", dst="bin", src=os.path.join(self.install_dir, "bin"), keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ['iconv']
+        if self.settings.os == "Windows" and self.options.shared:
+            self.cpp_info.libs = ['iconv.dll.lib']
+        else:
+            self.cpp_info.libs = ['iconv']
         self.env_info.path.append(os.path.join(self.package_folder, "bin"))
