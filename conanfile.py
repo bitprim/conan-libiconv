@@ -62,17 +62,9 @@ class LibiconvConan(ConanFile):
             options = '--enable-static --disable-shared'
 
         with tools.chdir(self.archive_name):
-            # WORKAROUND (for MSYS build)
-            # tools.replace_in_file(os.path.join('build-aux', 'ar-lib'), 'MINGW*)', 'MSYS*)')
-            # tools.replace_in_file(os.path.join('build-aux', 'compile'), 'MINGW*)', 'MSYS*)')
-
-            # WORKAROUND: libtool:   error: unrecognised option: '-DPACKAGE_VERSION_STRING=\"1.15\"'
-            tools.replace_in_file(os.path.join('src', 'Makefile.in'),
-                                  'OBJECTS_RES_yes = iconv.res', 'OBJECTS_RES_yes =')
-            tools.replace_in_file(os.path.join('lib', 'Makefile.in'),
-                                  'OBJECTS_RES_yes = libiconv.res.lo', 'OBJECTS_RES_yes =')
-
             self.run_in_cygwin('chmod a+x build-aux/ar-lib build-aux/compile')
+
+
 
             self.run_in_cygwin('win32_target=_WIN32_WINNT_VISTA ./configure '
                                '{options} '
