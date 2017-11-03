@@ -1,5 +1,5 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/n5bwli6x9ovqmvq4/branch/testing/1.15?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-libiconv/branch/testing/1.15)
-[![Build Status](https://travis-ci.org/bincrafters/conan-libiconv.svg?branch=testing%2F1.15)](https://travis-ci.org/bincrafters/conan-libiconv)
+[![Build status](https://ci.appveyor.com/api/projects/status/n5bwli6x9ovqmvq4/branch/stable/1.15?svg=true)](https://ci.appveyor.com/project/BinCrafters/conan-libiconv/branch/stable/1.15)
+[![Build Status](https://travis-ci.org/bincrafters/conan-libiconv.svg?branch=stable%2F1.15)](https://travis-ci.org/bincrafters/conan-libiconv)
 
 # This repository holds a recipe for the libiconv unicode conversion library
 
@@ -11,14 +11,14 @@ The packages generated with this **conanfile** can be found in [Bintray](https:/
 
 ### Basic setup
 
-    $ conan install libiconv/1.5@bincrafters/stable
+    $ conan install libiconv/1.15@bincrafters/stable
 
 ### Project setup
 
 If you handle multiple dependencies in your project is better to add a *conanfile.txt*
 
     [requires]
-    libiconv/1.5@bincrafters/stable
+    libiconv/1.15@bincrafters/stable
 
     [generators]
     txt
