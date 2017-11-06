@@ -42,12 +42,13 @@ class LibiconvConan(ConanFile):
             env_build.make(args=["install"])
 
     def run_in_cygwin(self, command):
-        bash = "%CYGWIN_ROOT%\\bin\\bash"
-        vcvars_command = tools.vcvars_command(self.settings)
-        self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
-            vcvars_command=vcvars_command,
-            bash=bash,
-            command=command))
+        with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
+            bash = "%CYGWIN_BIN%\\bash"
+            vcvars_command = tools.vcvars_command(self.settings)
+            self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
+                vcvars_command=vcvars_command,
+                bash=bash,
+                command=command))
 
     def build_vs(self):
         # README.windows
