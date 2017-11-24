@@ -18,6 +18,9 @@ class LibiconvConan(ConanFile):
     archive_name = "{0}-{1}".format(lib_short_name, version)
     install_dir = "libiconv-install"
 
+    def configure(self):
+        del self.settings.compiler.libcxx
+
     def source(self):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
         tools.get("{0}/{1}.tar.gz".format(source_url, self.archive_name))
@@ -63,9 +66,6 @@ class LibiconvConan(ConanFile):
 
         with tools.chdir(self.archive_name):
             self.run_in_cygwin('chmod a+x build-aux/ar-lib build-aux/compile')
-
-
-
             self.run_in_cygwin('win32_target=_WIN32_WINNT_VISTA ./configure '
                                '{options} '
                                '--host={host} '
@@ -82,7 +82,6 @@ class LibiconvConan(ConanFile):
                                'AR="$PWD/build-aux/ar-lib lib" '
                                'RANLIB=":" '.format(host=host, prefix=prefix, options=options,
                                                     runtime=str(self.settings.compiler.runtime)))
-
             self.run_in_cygwin('make -j%s' % tools.cpu_count())
             self.run_in_cygwin('make install')
 
