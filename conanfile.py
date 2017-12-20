@@ -12,8 +12,8 @@ class LibiconvConan(ConanFile):
     license = "https://github.com/lz4/lz4/blob/master/lib/LICENSE"
     url = "https://github.com/bincrafters/conan-libiconv"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
+    options = {"shared": [True, False], "fPIC": [True, False] }
+    default_options = "shared=False", "fPIC=True"
     lib_short_name = "libiconv"
     archive_name = "{0}-{1}".format(lib_short_name, version)
     install_dir = "libiconv-install"
@@ -31,6 +31,7 @@ class LibiconvConan(ConanFile):
 
     def build_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
+        env_build.fpic = self.options.fPIC
         configure_args = ['--prefix=%s' % os.path.abspath(self.install_dir)]
         if self.options.shared:
             configure_args.extend(['--disable-static', '--enable-shared'])
