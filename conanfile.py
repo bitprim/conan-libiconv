@@ -9,13 +9,13 @@ class LibiconvConan(ConanFile):
     name = "libiconv"
     version = "1.15"
     description = "Convert text to and from Unicode"
-    license = "https://github.com/lz4/lz4/blob/master/lib/LICENSE"
     url = "https://github.com/bincrafters/conan-libiconv"
+    license = "LGPL-2.1"
+    exports = ["LICENSE.md"]
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False] }
     default_options = "shared=False", "fPIC=True"
-    lib_short_name = "libiconv"
-    archive_name = "{0}-{1}".format(lib_short_name, version)
+    archive_name = "{0}-{1}".format(name, version)
     install_dir = "libiconv-install"
 
     def configure(self):
