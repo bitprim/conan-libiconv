@@ -103,7 +103,7 @@ class LibiconvConan(ConanFile):
             self.build_autotools()
 
     def package(self):
-        self.copy("COPYING", dst=".", src=self.archive_name)
+        self.copy(os.path.join(self.archive_name, "COPYING.LIB"), dst="licenses", ignore_case=True, keep_path=False)
         self.copy("*.h", dst="include", src=os.path.join(self.install_dir, "include"))
         if str(self.settings.os) in ["Macos", "iOS", "watchOS", "tvOS"]:
             if self.options.shared:
