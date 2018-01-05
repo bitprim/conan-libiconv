@@ -5,6 +5,7 @@ from conan.packager import ConanMultiPackager
 from conans import tools
 import importlib
 import os
+import platform
 
 
 def get_module_location():
@@ -34,7 +35,7 @@ if __name__ == "__main__":
     builder = module.get_builder()
     
     for settings, options, env_vars, build_requires, reference in builder.items:
-        if get_os() == "Windows":
+        if platform.system().replace("Darwin", "Macos") == "Windows":
             build_requires.update({"*": ["cygwin_installer/2.9.0@bincrafters/stable"]})
     
     builder.run()
