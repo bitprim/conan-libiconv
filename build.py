@@ -25,12 +25,6 @@ def get_module_url():
     return get_module_location() + "/" + get_module_filename()
 
 
-def get_build_requirements():
-    if get_os() == "Windows":
-        build_requirements = ["cygwin_installer/2.9.0@bincrafters/testing"]
-    return build_requirements
-    
-    
 if __name__ == "__main__":
     
     tools.download(get_module_url(), get_module_filename(), overwrite=True)
@@ -40,7 +34,8 @@ if __name__ == "__main__":
     builder = module.get_builder()
     
     for settings, options, env_vars, build_requires, reference in builder.items:
-        build_requires.update({"*": ["cygwin_installer/2.9.0@bincrafters/stable"]})
+        if get_os() == "Windows":
+            build_requires.update({"*": ["cygwin_installer/2.9.0@bincrafters/stable"]})
     
     builder.run()
 
