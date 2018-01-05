@@ -25,10 +25,6 @@ class LibiconvConan(ConanFile):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
         tools.get("{0}/{1}.tar.gz".format(source_url, self.archive_name))
 
-    def build_requirements(self):
-        if self.settings.os == "Windows":
-            self.build_requires("cygwin_installer/2.9.0@bincrafters/testing")
-
     def build_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
         env_build.fpic = self.options.fPIC
