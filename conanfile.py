@@ -56,7 +56,6 @@ class LibiconvConan(ConanFile):
         else:
             raise Exception("unsupported architecture %s" % self.settings.arch)
         prefix = tools.unix_path(os.path.abspath(self.install_dir))
-        prefix = '/cygdrive' + prefix
         if self.options.shared:
             options = '--disable-static --enable-shared'
         else:
