@@ -16,7 +16,6 @@ class LibiconvConan(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False] }
     default_options = "shared=False", "fPIC=True"
     archive_name = "{0}-{1}".format(name, version)
-    install_dir = "libiconv-install"
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -28,7 +27,7 @@ class LibiconvConan(ConanFile):
     def build_autotools(self):
         env_build = AutoToolsBuildEnvironment(self)
         env_build.fpic = self.options.fPIC
-        configure_args = ['--prefix=%s' % os.path.abspath(self.install_dir)]
+        configure_args = ['--prefix=%s' % os.path.abspath(self.package_folder)]
         if self.options.shared:
             configure_args.extend(['--disable-static', '--enable-shared'])
         else:
@@ -55,7 +54,7 @@ class LibiconvConan(ConanFile):
             host = "x86_64-w64-mingw32"
         else:
             raise Exception("unsupported architecture %s" % self.settings.arch)
-        prefix = tools.unix_path(os.path.abspath(self.install_dir))
+        prefix = tools.unix_path(os.path.abspath(self.package_folder))
         if self.options.shared:
             options = '--disable-static --enable-shared'
         else:
@@ -99,21 +98,6 @@ class LibiconvConan(ConanFile):
 
     def package(self):
         self.copy(os.path.join(self.archive_name, "COPYING.LIB"), dst="licenses", ignore_case=True, keep_path=False)
-        self.copy("*.h", dst="include", src=os.path.join(self.install_dir, "include"))
-        if str(self.settings.os) in ["Macos", "iOS", "watchOS", "tvOS"]:
-            if self.options.shared:
-                self.copy("*.dylib", dst="lib", src=os.path.join(self.install_dir, "lib"), keep_path=False)
-            else:
-                self.copy("*.a", dst="lib", src=os.path.join(self.install_dir, "lib"), keep_path=False)
-        elif str(self.settings.os) in ["Linux", "Android"]:
-            if self.options.shared:
-                self.copy("*.so*", dst="lib", src=os.path.join(self.install_dir, "lib"), keep_path=False)
-            else:
-                self.copy("*.a", dst="lib", src=os.path.join(self.install_dir, "lib"), keep_path=False)
-        elif self.settings.os == "Windows":
-            self.copy("*.lib", dst="lib", src=os.path.join(self.install_dir, "lib"), keep_path=False)
-            if self.options.shared:
-                self.copy("*.dll", dst="bin", src=os.path.join(self.install_dir, "bin"), keep_path=False)
 
     def package_info(self):
         if self.settings.os == "Windows" and self.options.shared:
