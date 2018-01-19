@@ -67,8 +67,12 @@ class LibiconvConan(ConanFile):
         with tools.chdir(self.archive_name):
             with tools.environment_append(env_vars):
                 env_build.configure(args=configure_args, host=host)
-                env_build.make()
-                env_build.make(args=["install"])
+                if self.settings.compiler == 'Visual Studio':
+                    self.run_in_windows_bash(self, 'make')
+                    self.run_in_windows_bash(self, 'make install')
+                else:
+                    env_build.make()
+                    env_build.make(args=["install"])
 
     def run_in_cygwin(self, command):
         with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
