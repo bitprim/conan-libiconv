@@ -68,8 +68,8 @@ class LibiconvConan(ConanFile):
             with tools.environment_append(env_vars):
                 env_build.configure(args=configure_args, host=host)
                 if self.settings.compiler == 'Visual Studio':
-                    self.run_in_windows_bash(self, 'make')
-                    self.run_in_windows_bash(self, 'make install')
+                    tools.run_in_windows_bash(self, 'make')
+                    tools.run_in_windows_bash(self, 'make install')
                 else:
                     env_build.make()
                     env_build.make(args=["install"])
