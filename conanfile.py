@@ -13,7 +13,7 @@ class LibiconvConan(ConanFile):
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False] }
+    options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = "shared=False", "fPIC=True"
     archive_name = "{0}-{1}".format(name, version)
 
@@ -23,13 +23,6 @@ class LibiconvConan(ConanFile):
     def source(self):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
         tools.get("{0}/{1}.tar.gz".format(source_url, self.archive_name))
-
-    def run(self, command, output=True, cwd=None, win_bash=False, subsystem=None, msys_mingw=True):
-        if self.settings.compiler == 'Visual Studio' and not win_bash:
-            vcvars_command = tools.vcvars_command(self.settings, force=True)
-            command = '%s && %s' % (vcvars_command, command)
-        print(command)
-        return super(LibiconvConan, self).run(command, output, cwd, win_bash, subsystem, msys_mingw)
 
     def build_autotools(self):
         prefix = os.path.abspath(self.package_folder)
@@ -95,7 +88,8 @@ class LibiconvConan(ConanFile):
                 cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
                 with tools.environment_append({'PATH': [cygwin_bin],
                                                'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
-                    self.build_autotools()
+                    with tools.vcvars(self.settings):
+                        self.build_autotools()
             elif self.settings.compiler == "gcc":
                 self.build_mingw()
             else:
