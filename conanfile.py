@@ -64,7 +64,16 @@ class LibiconvConan(ConanFile):
                 env_build.make()
                 env_build.make(args=["install"])
 
-    def run(self, command, output=True, cwd=None, win_bash=False, subsystem=None, msys_mingw=True):
+    def run_in_cygwin(self, command):
+        with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
+            bash = "%CYGWIN_BIN%\\bash"
+            vcvars_command = tools.vcvars_command(self.settings, force=True)
+            self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
+                vcvars_command=vcvars_command,
+                bash=bash,
+                command=command))
+
+    def run2(self, command, output=True, cwd=None, win_bash=False, subsystem=None, msys_mingw=True):
         if self.settings.compiler == 'Visual Studio':
             with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
                 bash = "%CYGWIN_BIN%\\bash"
@@ -77,13 +86,48 @@ class LibiconvConan(ConanFile):
         else:
             super(LibiconvConan, self).run(command, output, cwd, win_bash, subsystem, msys_mingw)
 
+    def build_vs(self):
+        # README.windows
+        if self.settings.arch == "x86":
+            host = "i686-w64-mingw32"
+        elif self.settings.arch == "x86_64":
+            host = "x86_64-w64-mingw32"
+        else:
+            raise Exception("unsupported architecture %s" % self.settings.arch)
+        prefix = tools.unix_path(os.path.abspath(self.package_folder))
+        if self.options.shared:
+            options = '--disable-static --enable-shared'
+        else:
+            options = '--enable-static --disable-shared'
+
+        with tools.chdir(self.archive_name):
+            self.run_in_cygwin('chmod a+x build-aux/ar-lib build-aux/compile')
+            self.run_in_cygwin('win32_target=_WIN32_WINNT_VISTA ./configure '
+                               '{options} '
+                               '--host={host} '
+                               '--prefix={prefix} '
+                               'CC="$PWD/build-aux/compile cl -nologo" '
+                               'CFLAGS="-{runtime}" '
+                               'CXX="$PWD/build-aux/compile cl -nologo" '
+                               'CXXFLAGS="-{runtime}" '
+                               'CPPFLAGS="-D_WIN32_WINNT=0x0600 -I{prefix}/include" '
+                               'LDFLAGS="-L{prefix}/lib" '
+                               'LD="link" '
+                               'NM="dumpbin -symbols" '
+                               'STRIP=":" '
+                               'AR="$PWD/build-aux/ar-lib lib" '
+                               'RANLIB=":" '.format(host=host, prefix=prefix, options=options,
+                                                    runtime=str(self.settings.compiler.runtime)))
+            self.run_in_cygwin('make -j%s' % tools.cpu_count())
+            self.run_in_cygwin('make install')
+
     def build_mingw(self):
         raise Exception("not implemented")
 
     def build(self):
         if self.settings.os == "Windows":
             if self.settings.compiler == "Visual Studio":
-                self.build_autotools()
+                self.build_vs()
             elif self.settings.compiler == "gcc":
                 self.build_mingw()
             else:
