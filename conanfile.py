@@ -24,6 +24,15 @@ class LibiconvConan(ConanFile):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
         tools.get("{0}/{1}.tar.gz".format(source_url, self.archive_name))
 
+    def run_in_cygwin(self, command):
+        with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
+            bash = "%CYGWIN_BIN%\\bash"
+            vcvars_command = tools.vcvars_command(self.settings, force=True)
+            self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
+                vcvars_command=vcvars_command,
+                bash=bash,
+                command=command))
+
     def build_autotools(self):
         prefix = os.path.abspath(self.package_folder)
         win_bash = False
@@ -68,8 +77,8 @@ class LibiconvConan(ConanFile):
             with tools.environment_append(env_vars):
                 env_build.configure(args=configure_args, host=host)
                 if self.settings.compiler == 'Visual Studio':
-                    tools.run_in_windows_bash(self, 'make')
-                    tools.run_in_windows_bash(self, 'make install')
+                    self.run_in_cygwin('make')
+                    self.run_in_cygwin('make install')
                 else:
                     env_build.make()
                     env_build.make(args=["install"])
