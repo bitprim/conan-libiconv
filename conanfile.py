@@ -69,12 +69,8 @@ class LibiconvConan(ConanFile):
         with tools.chdir(self.archive_name):
             with tools.environment_append(env_vars):
                 env_build.configure(args=configure_args, host=host, build=build)
-                if self.settings.compiler == 'Visual Studio':
-                    self.run_in_cygwin('make')
-                    self.run_in_cygwin('make install')
-                else:
-                    env_build.make()
-                    env_build.make(args=["install"])
+                env_build.make()
+                env_build.make(args=["install"])
 
     def build_mingw(self):
         raise Exception("not implemented")
