@@ -45,10 +45,13 @@ class LibiconvConan(ConanFile):
         build = None
         if self.settings.compiler == 'Visual Studio':
             build = False
+            rc = None
             if self.settings.arch == "x86":
                 host = "i686-w64-mingw32"
+                rc = "windres --target=pe-i386"
             elif self.settings.arch == "x86_64":
                 host = "x86_64-w64-mingw32"
+                rc = "windres --target=pe-x86-64"
             runtime = str(self.settings.compiler.runtime)
             configure_args.extend(['CC=$PWD/build-aux/compile cl -nologo',
                                    'CFLAGS=-%s' % runtime,
@@ -60,7 +63,9 @@ class LibiconvConan(ConanFile):
                                    'NM=dumpbin -symbols',
                                    'STRIP=:',
                                    'AR=$PWD/build-aux/ar-lib lib',
-                                   'RANLIB=:'])
+                                   'RANLIB=:',
+                                   'RC=%s' % rc,
+                                   'WINDRES=%s' % rc])
             env_vars['win32_target'] = '_WIN32_WINNT_VISTA'
 
             with tools.chdir(self.archive_name):
