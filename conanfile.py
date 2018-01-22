@@ -24,15 +24,6 @@ class LibiconvConan(ConanFile):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
         tools.get("{0}/{1}.tar.gz".format(source_url, self.archive_name))
 
-    def run_in_cygwin(self, command):
-        with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
-            bash = "%CYGWIN_BIN%\\bash"
-            vcvars_command = tools.vcvars_command(self.settings, force=True)
-            self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
-                vcvars_command=vcvars_command,
-                bash=bash,
-                command=command))
-
     def build_autotools(self):
         prefix = os.path.abspath(self.package_folder)
         win_bash = False
@@ -51,7 +42,9 @@ class LibiconvConan(ConanFile):
         host = None
 
         env_vars = {}
+        build = None
         if self.settings.compiler == 'Visual Studio':
+            build = False
             if self.settings.arch == "x86":
                 host = "i686-w64-mingw32"
             elif self.settings.arch == "x86_64":
@@ -75,22 +68,13 @@ class LibiconvConan(ConanFile):
 
         with tools.chdir(self.archive_name):
             with tools.environment_append(env_vars):
-                env_build.configure(args=configure_args, host=host)
+                env_build.configure(args=configure_args, host=host, build=build)
                 if self.settings.compiler == 'Visual Studio':
                     self.run_in_cygwin('make')
                     self.run_in_cygwin('make install')
                 else:
                     env_build.make()
                     env_build.make(args=["install"])
-
-    def run_in_cygwin(self, command):
-        with tools.environment_append({'PATH': [self.deps_env_info['cygwin_installer'].CYGWIN_BIN]}):
-            bash = "%CYGWIN_BIN%\\bash"
-            vcvars_command = tools.vcvars_command(self.settings, force=True)
-            self.run("{vcvars_command} && {bash} -c ^'{command}'".format(
-                vcvars_command=vcvars_command,
-                bash=bash,
-                command=command))
 
     def build_mingw(self):
         raise Exception("not implemented")
