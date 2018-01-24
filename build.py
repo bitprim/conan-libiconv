@@ -4,6 +4,7 @@
 
 from bincrafters import build_template_default, build_shared
 import platform
+import os
 
 if __name__ == "__main__":
 
@@ -17,5 +18,3 @@ if __name__ == "__main__":
             build_requires.update({"*": installers})
     
     builder.run()
-
-    
