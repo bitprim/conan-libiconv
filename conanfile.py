@@ -17,6 +17,14 @@ class LibiconvConan(ConanFile):
     default_options = "shared=False", "fPIC=True"
     archive_name = "{0}-{1}".format(name, version)
 
+    @property
+    def is_mingw(self):
+        return self.settings.os == 'Windows' and self.settings.compiler == 'gcc'
+
+    @property
+    def is_msvc(self):
+        return self.settings.compiler == 'Visual Studio'
+
     def configure(self):
         del self.settings.compiler.libcxx
 
@@ -27,9 +35,19 @@ class LibiconvConan(ConanFile):
     def build_autotools(self):
         prefix = os.path.abspath(self.package_folder)
         win_bash = False
-        if self.settings.compiler == 'Visual Studio':
-            prefix = tools.unix_path(prefix)
+        rc = None
+        host = None
+        build = None
+        if self.is_mingw or self.is_msvc:
+            prefix = prefix.replace('\\', '/')
             win_bash = True
+            build = False
+            if self.settings.arch == "x86":
+                host = "i686-w64-mingw32"
+                rc = "windres --target=pe-i386"
+            elif self.settings.arch == "x86_64":
+                host = "x86_64-w64-mingw32"
+                rc = "windres --target=pe-x86-64"
 
         env_build = AutoToolsBuildEnvironment(self, win_bash=win_bash)
         env_build.fpic = self.options.fPIC
@@ -39,19 +57,14 @@ class LibiconvConan(ConanFile):
             configure_args.extend(['--disable-static', '--enable-shared'])
         else:
             configure_args.extend(['--enable-static', '--disable-shared'])
-        host = None
 
         env_vars = {}
-        build = None
-        if self.settings.compiler == 'Visual Studio':
-            build = False
-            rc = None
-            if self.settings.arch == "x86":
-                host = "i686-w64-mingw32"
-                rc = "windres --target=pe-i386"
-            elif self.settings.arch == "x86_64":
-                host = "x86_64-w64-mingw32"
-                rc = "windres --target=pe-x86-64"
+
+        if self.is_mingw:
+            configure_args.extend(['CPPFLAGS=-I%s/include' % prefix,
+                                   'LDFLAGS=-L%s/lib' % prefix,
+                                   'RANLIB=:'])
+        if self.is_msvc:
             runtime = str(self.settings.compiler.runtime)
             configure_args.extend(['CC=$PWD/build-aux/compile cl -nologo',
                                    'CFLAGS=-%s' % runtime,
@@ -63,13 +76,14 @@ class LibiconvConan(ConanFile):
                                    'NM=dumpbin -symbols',
                                    'STRIP=:',
                                    'AR=$PWD/build-aux/ar-lib lib',
-                                   'RANLIB=:',
-                                   'RC=%s' % rc,
-                                   'WINDRES=%s' % rc])
+                                   'RANLIB=:'])
             env_vars['win32_target'] = '_WIN32_WINNT_VISTA'
 
             with tools.chdir(self.archive_name):
                 tools.run_in_windows_bash(self, 'chmod +x build-aux/ar-lib build-aux/compile')
+
+        if rc:
+            configure_args.extend(['RC=%s' % rc, 'WINDRES=%s' % rc])
 
         with tools.chdir(self.archive_name):
             with tools.environment_append(env_vars):
@@ -77,22 +91,19 @@ class LibiconvConan(ConanFile):
                 env_build.make()
                 env_build.make(args=["install"])
 
-    def build_mingw(self):
-        raise Exception("not implemented")
-
     def build(self):
         if self.settings.os == "Windows":
-            if self.settings.compiler == "Visual Studio":
-                cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
-                with tools.environment_append({'PATH': [cygwin_bin],
-                                               'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
+            cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
+            with tools.environment_append({'PATH': [cygwin_bin],
+                                           'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
+                if self.is_msvc:
                     with tools.vcvars(self.settings):
                         self.build_autotools()
-            elif self.settings.compiler == "gcc":
-                self.build_mingw()
-            else:
-                # TODO : clang on Windows and others
-                raise Exception("unsupported build")
+                elif self.is_mingw:
+                    self.build_autotools()
+                else:
+                    # TODO : clang on Windows and others
+                    raise Exception("unsupported build")
         else:
             self.build_autotools()
 
