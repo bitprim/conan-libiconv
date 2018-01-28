@@ -17,6 +17,12 @@ class LibiconvConan(ConanFile):
     default_options = "shared=False", "fPIC=True"
     archive_name = "{0}-{1}".format(name, version)
 
+    def build_requirements(self):
+        if self.settings.os == "Windows":
+            self.build_requires("cygwin_installer/2.9.0@bitprim/stable")
+            if self.settings.compiler != "Visual Studio":
+                self.build_requires("mingw_installer/1.0@conan/stable")
+
     def configure(self):
         del self.settings.compiler.libcxx
 
