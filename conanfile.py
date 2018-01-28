@@ -9,7 +9,7 @@ class LibiconvConan(ConanFile):
     name = "libiconv"
     version = "1.15"
     description = "Convert text to and from Unicode"
-    url = "https://github.com/bincrafters/conan-libiconv"
+    url = "https://github.com/bitprim/conan-libiconv"
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "compiler", "build_type", "arch"
