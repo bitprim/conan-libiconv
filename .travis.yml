@@ -19,7 +19,7 @@
 
 env:
    global:
-     - CONAN_REFERENCE: "boost/1.66.0"
+     - CONAN_REFERENCE: "libiconv/1.15"
      - CONAN_USERNAME: "bitprim"
      - CONAN_LOGIN_USERNAME: "bitprim-bintray"
      - CONAN_CHANNEL: "stable"
