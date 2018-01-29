@@ -80,10 +80,9 @@ class LibiconvConan(ConanFile):
         win_bash = False
 
         # if self.settings.compiler == 'Visual Studio':
-        #     prefix = tools.unix_path(prefix)
-        #     win_bash = True
-        prefix = tools.unix_path(prefix)
-        win_bash = True
+        if self.settings.os == "Windows":
+            prefix = tools.unix_path(prefix)
+            win_bash = True
 
         env_build = AutoToolsBuildEnvironment(self, win_bash=win_bash)
         env_build.fpic = self.options.fPIC
