@@ -22,7 +22,7 @@ class LibiconvConan(ConanFile):
             if self.settings.compiler != "Visual Studio":
                 self.build_requires("mingw_installer/1.0@conan/stable")
                 self.build_requires("msys2_installer/20161025@bitprim/stable")
-        else:
+            else:
                 self.build_requires("cygwin_installer/2.9.0@bitprim/stable")
 
     def configure(self):
