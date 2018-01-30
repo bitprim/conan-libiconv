@@ -17,6 +17,8 @@ class LibiconvConan(ConanFile):
     default_options = "shared=False", "fPIC=True"
     archive_name = "{0}-{1}".format(name, version)
 
+    build_policy = "missing"
+
     def build_requirements(self):
         if self.settings.os == "Windows":
             if self.settings.compiler != "Visual Studio":
