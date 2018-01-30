@@ -19,9 +19,11 @@ class LibiconvConan(ConanFile):
 
     def build_requirements(self):
         if self.settings.os == "Windows":
-            self.build_requires("cygwin_installer/2.9.0@bitprim/stable")
             if self.settings.compiler != "Visual Studio":
                 self.build_requires("mingw_installer/1.0@conan/stable")
+                self.build_requires("msys2_installer/20161025@bitprim/stable")
+        else:
+                self.build_requires("cygwin_installer/2.9.0@bitprim/stable")
 
     def configure(self):
         del self.settings.compiler.libcxx
@@ -32,36 +34,22 @@ class LibiconvConan(ConanFile):
 
     def build(self):
         if self.settings.os == "Windows":
-            cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
-            with tools.environment_append({'PATH': [cygwin_bin],
-                                            'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
-                if self.settings.compiler == "Visual Studio":
+            if self.settings.compiler == "Visual Studio":
+                cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
+                with tools.environment_append({'PATH': [cygwin_bin],
+                                               'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
                     with tools.vcvars(self.settings):
                         self.build_autotools()
-                elif self.settings.compiler == "gcc":
-                    # self.build_mingw()
+            elif self.settings.compiler == "gcc":
+                # self.build_mingw()
+                msys_bin = self.deps_env_info['msys2_installer'].MSYS_BIN
+                with tools.environment_append({'PATH': [msys_bin], 'CONAN_BASH_PATH': '%s/bash.exe' % msys_bin}):
                     self.build_autotools()
-                else:
-                    # TODO : clang on Windows and others
-                    raise Exception("unsupported build")
+            else:
+                # TODO : clang on Windows and others
+                raise Exception("unsupported build")
         else:
             self.build_autotools()
-
-        # if self.settings.os == "Windows":
-        #     if self.settings.compiler == "Visual Studio":
-        #         cygwin_bin = self.deps_env_info['cygwin_installer'].CYGWIN_BIN
-        #         with tools.environment_append({'PATH': [cygwin_bin],
-        #                                        'CONAN_BASH_PATH': '%s/bash.exe' % cygwin_bin}):
-        #             with tools.vcvars(self.settings):
-        #                 self.build_autotools()
-        #     elif self.settings.compiler == "gcc":
-        #         # self.build_mingw()
-        #         self.build_autotools()
-        #     else:
-        #         # TODO : clang on Windows and others
-        #         raise Exception("unsupported build")
-        # else:
-        #     self.build_autotools()
 
     def package(self):
         self.copy(os.path.join(self.archive_name, "COPYING.LIB"), dst="licenses", ignore_case=True, keep_path=False)
