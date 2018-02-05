@@ -13,11 +13,36 @@ class LibiconvConan(ConanFile):
     license = "LGPL-2.1"
     exports = ["LICENSE.md"]
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False], "fPIC": [True, False]}
+
+    options = {
+                "shared": [True, False], 
+                "fPIC": [True, False]
+    }
+
     default_options = "shared=False", "fPIC=True"
+
     archive_name = "{0}-{1}".format(name, version)
 
     build_policy = "missing"
+
+    @property
+    def msvc_mt_build(self):
+        return "MT" in str(self.settings.compiler.runtime)
+
+    @property
+    def fPIC_enabled(self):
+        if self.settings.compiler == "Visual Studio":
+            return False
+        else:
+            return self.options.fPIC
+
+    @property
+    def is_shared(self):
+        # if self.options.shared and self.msvc_mt_build:
+        if self.settings.compiler == "Visual Studio" and self.msvc_mt_build:
+            return False
+        else:
+            return self.options.shared
 
     def build_requirements(self):
         if self.settings.os == "Windows":
@@ -28,7 +53,17 @@ class LibiconvConan(ConanFile):
                 self.build_requires("cygwin_installer/2.9.0@bitprim/stable")
 
     def configure(self):
-        del self.settings.compiler.libcxx
+        del self.settings.compiler.libcxx #Pure-C 
+
+    def config_options(self):
+        self.output.info('*-*-*-*-*-* def config_options(self):')
+        if self.settings.compiler == "Visual Studio":
+            self.options.remove("fPIC")
+
+            if self.options.shared and self.msvc_mt_build:
+                self.options.remove("shared")
+
+
 
     def source(self):
         source_url = "https://ftp.gnu.org/gnu/libiconv"
@@ -57,7 +92,7 @@ class LibiconvConan(ConanFile):
         self.copy(os.path.join(self.archive_name, "COPYING.LIB"), dst="licenses", ignore_case=True, keep_path=False)
 
     def package_info(self):
-        if self.settings.os == "Windows" and self.options.shared:
+        if self.settings.os == "Windows" and self.is_shared:
             self.cpp_info.libs = ['iconv.dll.lib']
         else:
             self.cpp_info.libs = ['iconv']
@@ -75,10 +110,10 @@ class LibiconvConan(ConanFile):
             win_bash = True
 
         env_build = AutoToolsBuildEnvironment(self, win_bash=win_bash)
-        env_build.fpic = self.options.fPIC
+        env_build.fpic = self.fPIC_enabled
 
         configure_args = ['--prefix=%s' % prefix]
-        if self.options.shared:
+        if self.is_shared:
             configure_args.extend(['--disable-static', '--enable-shared'])
         else:
             configure_args.extend(['--enable-static', '--disable-shared'])
